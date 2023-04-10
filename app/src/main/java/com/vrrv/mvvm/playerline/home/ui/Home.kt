@@ -1,7 +1,12 @@
 package com.vrrv.mvvm.playerline.home.ui
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,25 +18,24 @@ import androidx.compose.material.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
 import com.vrrv.mvvm.playerline.home.HomeViewModel
 import com.vrrv.mvvm.playerline.ui.theme.PLTextView
+import com.vrrv.mvvm.playerline.ui.theme.ShimmerItem
 
 @Composable
 fun TabLayout(viewModel: HomeViewModel) {
@@ -56,6 +60,8 @@ fun TabLayout(viewModel: HomeViewModel) {
 @Composable
 fun HomeScreen(viewModel: HomeViewModel) {
     val playerData = viewModel.playerDetails.observeAsState()
+    val isLoading = viewModel.isLoading.observeAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -68,58 +74,69 @@ fun HomeScreen(viewModel: HomeViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top) {
 
-
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(0.dp)
-        ) {
-            playerData.value?.let {
-                items(it) { player ->
-                    Row(
-                        modifier = Modifier
-                            .align(Alignment.Start)
-                            .padding(horizontal = 16.dp, vertical = 12.dp)
-                    ) {
-                        Image(
-                            painter = rememberImagePainter(player.player_image_url),
-                            contentDescription = null,
-                            modifier = Modifier.size(70.dp)
-                        )
-                        Column {
-                            Row {
+        if (isLoading.value == true) {
+            repeat(9) {
+                ShimmerAnimation()
+                Divider(
+                    color = Color.Gray,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth()
+                        .width(1.dp)
+                )
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                playerData.value?.let {
+                    items(it) { player ->
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.Start)
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                        ) {
+                            Image(
+                                painter = rememberImagePainter(player.player_image_url),
+                                contentDescription = null,
+                                modifier = Modifier.size(70.dp)
+                            )
+                            Column {
+                                Row {
+                                    PLTextView(
+                                        data = player.pname,
+                                        size = 14,
+                                        modifier = Modifier.padding(0.dp)
+                                    )
+                                    PLTextView(
+                                        data = player.position,
+                                        size = 12,
+                                        modifier = Modifier.padding(top = 2.dp, start = 12.dp)
+                                    )
+                                }
                                 PLTextView(
-                                    data = player.pname,
-                                    size = 14,
-                                    modifier = Modifier.padding(0.dp)
+                                    data = player.title,
+                                    modifier = Modifier.padding(top = 4.dp)
                                 )
                                 PLTextView(
-                                    data = player.position,
-                                    size = 12,
-                                    modifier = Modifier.padding(top = 2.dp, start = 12.dp)
+                                    data = player.details,
+                                    weight = FontWeight.Thin,
+                                    modifier = Modifier.padding(top = 4.dp)
                                 )
                             }
-                            PLTextView(
-                                data = player.title,
-                                modifier = Modifier.padding(top = 4.dp)
-                            )
-                            PLTextView(
-                                data = player.details,
-                                weight = FontWeight.Thin,
-                                modifier = Modifier.padding(top = 4.dp)
-                            )
                         }
+                        Divider(
+                            color = Color.Gray,
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .fillMaxWidth()
+                                .width(1.dp)
+                        )
                     }
-                    Divider(
-                        color = Color.Gray,
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .fillMaxWidth()
-                            .width(1.dp)
-                    )
                 }
             }
-       }
-
+        }
     }
 }
 
@@ -144,4 +161,29 @@ fun LoadEmptyDataContent(viewModel: HomeViewModel) {
             )
         }
     }
+}
+
+@Composable
+fun ShimmerAnimation() {
+    val transition = rememberInfiniteTransition()
+    val translateAnim by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            tween(durationMillis = 1200, easing = FastOutSlowInEasing),
+            RepeatMode.Reverse
+        )
+    )
+
+    val brush = Brush.linearGradient(
+        colors = listOf(
+            Color.LightGray.copy(0.9f),
+            Color.LightGray.copy(0.2f),
+            Color.LightGray.copy(0.9f)
+        ),
+        start = Offset(10f, 10f),
+        end = Offset(translateAnim, translateAnim)
+    )
+    ShimmerItem(brush = brush)
+
 }

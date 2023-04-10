@@ -3,14 +3,12 @@ package com.vrrv.mvvm.playerline.home
 import android.app.Application
 import android.util.Log
 import androidx.compose.foundation.gestures.DraggableState
-import androidx.compose.runtime.Composable
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.vrrv.mvvm.playerline.domain.RetroAPI
 import com.vrrv.mvvm.playerline.model.Player
 import com.vrrv.mvvm.playerline.model.Players
-import com.vrrv.mvvm.playerline.model.PlayersList
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -22,17 +20,17 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
 
     val tabs = listOf("All", "Following", "Resources")
 
-    var isSwipeToTheLeft: Boolean = false
+    private var isSwipeToTheLeft: Boolean = false
     private val draggableState = DraggableState { delta ->
         isSwipeToTheLeft = delta > 0
     }
 
-    private val _dragState = MutableLiveData<DraggableState>(draggableState)
+    private val _dragState = MutableLiveData(draggableState)
     val dragState: LiveData<DraggableState> = _dragState
 
-    val playerDetails = MutableLiveData<List<Player>>()
+    val playerDetails = MutableLiveData<List<Player>>(emptyList())
 
-    //val isLoading = MutableLiveData(true)
+    val isLoading = MutableLiveData(true)
     fun updateTabIndexBasedOnSwipe() {
         _tabIndex.value = when (isSwipeToTheLeft) {
             true -> Math.floorMod(_tabIndex.value!!.plus(1), tabs.size)
@@ -49,9 +47,9 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
         call.enqueue(
             object : Callback<Players> {
                 override fun onResponse(call: Call<Players>, response: Response<Players>) {
+                    isLoading.value = false
                     response.body().let {
                         playerDetails.value = it?.data?.newslist
-                        //isLoading.value = false
                         Log.d("vrrv response ", playerDetails.value.toString())
                     }
                 }
@@ -60,7 +58,4 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
             }
         )
     }
-
 }
-
-data class TabRowItem(val title: String, val screen: @Composable () -> Unit)
