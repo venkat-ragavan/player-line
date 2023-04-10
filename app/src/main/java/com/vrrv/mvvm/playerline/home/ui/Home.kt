@@ -49,19 +49,13 @@ fun TabLayout(viewModel: HomeViewModel) {
                 )
             }
         }
-        when (tabIndex.value) {
-            0 -> HomeScreen(viewModel = viewModel)
-            1,2 -> LoadEmptyDataContent(viewModel = viewModel)
-        }
+        LoadScreenData(viewModel = viewModel)
     }
 }
 
-
 @Composable
-fun HomeScreen(viewModel: HomeViewModel) {
-    val playerData = viewModel.playerDetails.observeAsState()
-    val isLoading = viewModel.isLoading.observeAsState()
-
+fun LoadScreenData(viewModel: HomeViewModel) {
+    val tabIndex = viewModel.tabIndex.observeAsState()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -72,10 +66,21 @@ fun HomeScreen(viewModel: HomeViewModel) {
                 onDragStopped = { viewModel.updateTabIndexBasedOnSwipe() }
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top) {
+        verticalArrangement = Arrangement.Center) {
+        when (tabIndex.value) {
+            0 -> LoadPlayers(viewModel = viewModel)
+            1,2 -> LoadEmptyContent()
+        }
+    }
+}
 
+@Composable
+fun LoadPlayers(viewModel: HomeViewModel) {
+    val playerData = viewModel.playerDetails.observeAsState()
+    val isLoading = viewModel.isLoading.observeAsState()
+    Column {
         if (isLoading.value == true) {
-            repeat(9) {
+            repeat(10) {
                 ShimmerAnimation()
                 Divider(
                     color = Color.Gray,
@@ -141,18 +146,8 @@ fun HomeScreen(viewModel: HomeViewModel) {
 }
 
 @Composable
-fun LoadEmptyDataContent(viewModel: HomeViewModel) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .draggable(
-                state = viewModel.dragState.value!!,
-                orientation = Orientation.Horizontal,
-                onDragStarted = { },
-                onDragStopped = { viewModel.updateTabIndexBasedOnSwipe() }
-            ),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center) {
+fun LoadEmptyContent() {
+    Column {
         Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
             PLTextView(
                 data = "No data available at this moment",
@@ -185,5 +180,4 @@ fun ShimmerAnimation() {
         end = Offset(translateAnim, translateAnim)
     )
     ShimmerItem(brush = brush)
-
 }
