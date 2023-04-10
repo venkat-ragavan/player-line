@@ -10,6 +10,7 @@ import androidx.lifecycle.MutableLiveData
 import com.vrrv.mvvm.playerline.domain.RetroAPI
 import com.vrrv.mvvm.playerline.model.Player
 import com.vrrv.mvvm.playerline.model.Players
+import com.vrrv.mvvm.playerline.model.PlayersList
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -29,7 +30,9 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
     private val _dragState = MutableLiveData<DraggableState>(draggableState)
     val dragState: LiveData<DraggableState> = _dragState
 
-    val playerDetails = MutableLiveData<Player>()
+    val playerDetails = MutableLiveData<List<Player>>()
+
+    //val isLoading = MutableLiveData(true)
     fun updateTabIndexBasedOnSwipe() {
         _tabIndex.value = when (isSwipeToTheLeft) {
             true -> Math.floorMod(_tabIndex.value!!.plus(1), tabs.size)
@@ -47,7 +50,8 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
             object : Callback<Players> {
                 override fun onResponse(call: Call<Players>, response: Response<Players>) {
                     response.body().let {
-                        playerDetails.value = it?.data?.newslist?.first()
+                        playerDetails.value = it?.data?.newslist
+                        //isLoading.value = false
                         Log.d("vrrv response ", playerDetails.value.toString())
                     }
                 }

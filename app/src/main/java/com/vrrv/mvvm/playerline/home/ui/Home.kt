@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Text
@@ -18,6 +19,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
@@ -62,47 +67,59 @@ fun HomeScreen(viewModel: HomeViewModel) {
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top) {
-        Row(
-            modifier = Modifier
-                .align(Alignment.Start)
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+
+
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(0.dp)
         ) {
-            Image(
-                painter = rememberImagePainter(playerData.value?.player_image_url),
-                contentDescription = null,
-                modifier = Modifier.size(70.dp)
-            )
-            Column {
-                Row {
-                    PLTextView(
-                        data = playerData.value?.pname.orEmpty(),
-                        size = 14,
-                        modifier = Modifier.padding(0.dp)
-                    )
-                    PLTextView(
-                        data = playerData.value?.position.orEmpty(),
-                        size = 12,
-                        modifier = Modifier.padding(top = 2.dp, start = 12.dp)
+            playerData.value?.let {
+                items(it) { player ->
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.Start)
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                    ) {
+                        Image(
+                            painter = rememberImagePainter(player.player_image_url),
+                            contentDescription = null,
+                            modifier = Modifier.size(70.dp)
+                        )
+                        Column {
+                            Row {
+                                PLTextView(
+                                    data = player.pname,
+                                    size = 14,
+                                    modifier = Modifier.padding(0.dp)
+                                )
+                                PLTextView(
+                                    data = player.position,
+                                    size = 12,
+                                    modifier = Modifier.padding(top = 2.dp, start = 12.dp)
+                                )
+                            }
+                            PLTextView(
+                                data = player.title,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                            PLTextView(
+                                data = player.details,
+                                weight = FontWeight.Thin,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
+                    }
+                    Divider(
+                        color = Color.Gray,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .fillMaxWidth()
+                            .width(1.dp)
                     )
                 }
-                PLTextView(
-                    data = playerData.value?.title.orEmpty(),
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-                PLTextView(
-                    data = playerData.value?.details.orEmpty(),
-                    weight = FontWeight.Thin,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
             }
-        }
-        Divider(
-            color = Color.Gray,
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxWidth()
-                .width(1.dp)
-        )
+       }
+
     }
 }
 
