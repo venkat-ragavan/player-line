@@ -9,7 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.vrrv.mvvm.playerline.home.HomeViewModel
-import com.vrrv.mvvm.playerline.home.TabLayout
+import com.vrrv.mvvm.playerline.home.ui.TabLayout
 import com.vrrv.mvvm.playerline.ui.theme.MyApplicationTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,6 +18,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        viewModel.loadPlayerDetails()
         setContent {
             MyApplicationTheme {
                 Surface(
